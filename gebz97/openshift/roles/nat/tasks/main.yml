@@ -1,0 +1,27 @@
+---
+# tasks file for nat
+- name: Setup firewalld zones
+  ansible.posix.firewalld:
+    zone: "{{ item.zone }}"
+    interface: "{{ item.interface }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - zone: internal
+      interface: "{{ firewalld_internal_interface }}"
+    - zone: external
+      interface: "{{ firewalld_external_interface }}"
+
+- name: Set masquerading on both zones
+  ansible.posix.firewalld:
+    zone: "{{ item }}"
+    masquerade: yes
+    permanent: yes
+    state: enabled
+  loop:
+    - internal
+    - external
+
+- name: Reload firewalld config
+  ansible.posix.firewalld:
+    state: reloaded

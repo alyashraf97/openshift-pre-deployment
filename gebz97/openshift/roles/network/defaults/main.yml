@@ -1,0 +1,8 @@
+---
+# defaults file for network
+static_ip_interface: ens224
+static_ip_address: 192.168.22.1
+static_ip_dns_server: 127.0.0.1
+static_ip_search_domain: ocp.lan
+static_ip_default_route: no
+static_ip_auto_connect: yes

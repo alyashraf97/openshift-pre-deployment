@@ -1,0 +1,4 @@
+---
+# defaults file for nat
+firewalld_internal_interface: ens224
+firewalld_external_interface: ens192

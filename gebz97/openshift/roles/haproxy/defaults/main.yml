@@ -1,0 +1,12 @@
+---
+# defaults file for haproxy
+max_conn: 20000
+
+bootstrap_ip: 192.168.2.2
+
+master_1_ip: 192.168.2.11
+master_2_ip: 192.168.2.12
+master_3_ip: 192.168.2.13
+
+worker_1_ip: 192.168.2.21
+worker_2_ip: 192.168.2.22

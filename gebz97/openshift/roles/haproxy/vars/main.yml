@@ -1,0 +1,18 @@
+---
+# vars file for haproxy
+internal_haproxy_ports:
+  - 6443
+  - 22623
+
+external_haproxy_ports:
+  - 6443
+  - 22623
+  - 9000
+
+internal_haproxy_services:
+  - http
+  - https
+
+external_haproxy_services:
+  - http
+  - https

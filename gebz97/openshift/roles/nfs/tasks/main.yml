@@ -1,0 +1,41 @@
+---
+# tasks file for nfs
+- name: Install NFS Server
+  ansible.builtin.dnf:
+    name: nfs-utils
+    state: latest
+
+- name: Create the Share
+  ansible.builtin.file:
+    path: "{{ nfs_registry_share_dir }}"
+    state: directory
+    owner: "{{ nfs_registry_share_owner }}"
+    group: "{{ nfs_registry_share_group }}"
+    mode: "{{ nfs_registry_share_mode }}"
+
+- name: Export the Share
+  ansible.posix.nfs_export:
+    path: "{{ nfs_registry_share_dir }}"
+    options: "{{ nfs_registry_export_options }}"
+    clients: "{{ nfs_registry_export_network }}"
+
+- name: Set Firewall rules
+  ansible.posix.firewalld:
+    zone: "{{ nfs_registry_firewall_zone }}"
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - mountd
+    - rpc-bind
+    - nfs
+
+- name: Enable and start the NFS related services
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - nfs-server
+    - rpcbind
+    - nfs-mountd

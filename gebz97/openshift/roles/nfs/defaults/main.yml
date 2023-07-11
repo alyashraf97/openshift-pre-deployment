@@ -1,0 +1,10 @@
+---
+# defaults file for nfs
+nfs_registry_share_dir: /shares/registry
+nfs_registry_share_owner: nobody
+nfs_registry_share_group: nobody
+nfs_registry_share_mode: 0777
+nfs_registry_export_options: rw,sync,root_squash,no_subtree_check,no_wdelay
+nfs_registry_export_network: 192.168.2.0/24
+nfs_registry_firewall_zone: internal
+...

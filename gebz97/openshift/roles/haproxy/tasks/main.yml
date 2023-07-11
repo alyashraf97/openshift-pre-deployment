@@ -1,0 +1,61 @@
+---
+# tasks file for haproxy
+- name: Installing haproxy
+  ansible.builtin.dnf:
+    name: haproxy
+    state: latest
+
+- name: Adding relevant Config Directives
+  ansible.builtin.template:
+    src: templates/haproxy.j2
+    dest: /etc/haproxy/haproxy.cfg
+    backup: true
+
+- name: Set correct firewall rules for ports internally
+  loop: "{{ internal_haproxy_ports }}"
+  ansible.posix.firewalld:
+    port: "{{ item }}" 
+    zone: internal
+    state: enabled
+    permanent: true
+
+- name: Set correct firewall rules for ports externally
+  loop: "{{ external_haproxy_ports }}"
+  ansible.posix.firewalld:
+    port: "{{ item }}" 
+    zone: external
+    state: enabled
+    permanent: true
+
+- name: Set correct firewall rules for internal services
+  loop: "{{ internal_haproxy_services }}"
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    zone: internal
+    state: enabled
+    permanent: true
+
+- name: Set correct firewall rules for internal services
+  loop: "{{ external_haproxy_services }}"
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    zone: internal
+    state: enabled
+    permanent: true
+
+- name: Reloading firewalld
+  ansible.builtin.service:
+    name: firewalld
+    state: reloaded
+    
+- name: Set correct SELinux Context
+  ansible.posix.seboolean:
+    name: haproxy_connect_any
+    state: true
+    persistent: true
+
+- name: Enable haproxy service
+  ansible.builtin.service:
+    name: haproxy
+    enabled: true
+    state: reloaded
