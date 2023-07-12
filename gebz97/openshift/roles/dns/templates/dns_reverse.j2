@@ -1,0 +1,24 @@
+$TTL    604800
+@       IN      SOA     {{ dns_server }}.{{ base_domain }}. contact.{{ base_domain }} (
+                  1     ; Serial
+             604800     ; Refresh
+              86400     ; Retry
+            2419200     ; Expire
+             604800     ; Minimum
+)
+
+  IN      NS      {{ dns_server }}.{{ base_domain }}.
+
+{{ dns_server_bind_listen_ip.split('.')[-1] }}      IN    PTR    {{ dns_server }}.{{ base_domain }}.
+{{ dns_server_bind_listen_ip.split('.')[-1] }}      IN    PTR    api.{{ cluster_domain }}.
+{{ dns_server_bind_listen_ip.split('.')[-1] }}      IN    PTR    api-int.{{ cluster_domain }}.
+;
+{{ bootstrap_node.ip.split('.')[-1] }}    IN    PTR    {{ bootstrap_node.name }}.{{ cluster_domain }}.
+;
+{% for node in control_plane_nodes %}
+{{ node.ip.split('.')[-1] }}    IN    PTR    {{ node.name }}.{{ cluster_domain }}.
+{% endfor %}
+;
+{% for node in worker_nodes %}
+{{ node.ip.split('.')[-1] }}    IN    PTR    {{ node.name }}.{{ cluster_domain }}.
+{% endfor %}

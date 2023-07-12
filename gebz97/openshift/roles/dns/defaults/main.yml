@@ -1,2 +1,49 @@
 ---
 # defaults file for dns
+base_domain: ocp.lan # DNS domain name 
+primary_forward_dns: 192.168.1.170 # Primary forward DNS server 
+secondary_forward_dns: 1.1.1.1 # Secondary forward DNS server 
+tertiary_forward_dns: 8.8.8.8 # Tertiary forward DNS server 
+dns_host_internal_network: 192.168.2.0/24 # DNS host internal network 
+dns_server_bind_listen_ip: 192.168.2.1 # DNS server IP address 
+dns_zone_file: db.ocp.lan # DNS zone file name 
+dns_internal_zone_subnet_reverse: 2.168.192 # DNS internal zone subnet reverse 
+dns_server: ocp-svc # DNS server name 
+dns_external_connection_profile: ens192
+
+# Define OpenShift parameters
+cluster_name: lab # OpenShift cluster name 
+cluster_domain: lab.ocp.lan # OpenShift cluster domain name 
+load_balancer_ip: 192.168.2.1 # OpenShift load balancer IP address 
+
+# Define Bootstrap Node
+bootstrap_node:
+  name: ocp-bootstrap # Bootstrap node name 
+  ip: 192.168.2.3 # Bootstrap node IP address 
+
+# Define Control Plane Nodes as a list of dictionaries 
+control_plane_nodes:
+  - name: ocp-cp-1 # Control plane node name 
+    ip: 192.168.2.11 # Control plane node IP address 
+  - name: ocp-cp-2 # Control plane node name 
+    ip: 192.168.2.12 # Control plane node IP address 
+  - name: ocp-cp-3 # Control plane node name 
+    ip: 192.168.2.13 # Control plane node IP address 
+
+# Define Worker Nodes as a list of dictionaries 
+worker_nodes:
+  - name: ocp-w-1 # Worker node name 
+    ip: 192.168.2.21 # Worker node IP address 
+  - name: ocp-w-2 # Worker node name 
+    ip: 192.168.2.22 # Worker node IP address 
+
+# Define ETCD Nodes as a list of dictionaries 
+etcd_nodes:
+  - name: etcd-0 # ETCD node name 
+    ip: 192.168.2.11 # ETCD node IP address 
+  - name: etcd-1 # ETCD node name 
+    ip: 192.168.2.12 # ETCD node IP address 
+  - name: etcd-2 # ETCD node name 
+    ip: 192.168.2.13 # ETCD node IP address
+
+

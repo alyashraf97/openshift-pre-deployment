@@ -1,2 +1,70 @@
 ---
 # tasks file for dns
+---
+# tasks file for dns
+- name: Install BIND DNS
+  dnf:
+    name:
+      - bind
+      - bind-utils
+    state: present
+
+- name: Apply configuration
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - src: named.conf.j2
+      dest: /etc/named.conf
+      mode: '0644'
+    - src: zones/
+      dest: /etc/named/
+      mode: '0755'
+
+- name: Configure the firewall for DNS
+  firewalld:
+    port: "{{ item }}"
+    zone: internal
+    permanent: yes
+    state: enabled
+  loop:
+    - 53/udp
+    - 53/tcp
+
+- name: Reload the firewall
+  firewalld:
+    state: reloaded
+
+- name: Enable and start the service
+  systemd:
+    name: named
+    enabled: yes
+    state: started
+
+- name: Change the LAN nic to use 127.0.0.1 for DNS and ignore automatically obtained DNS parameters
+  nmcli:
+    conn_name: ens192
+    dns4:
+      - 127.0.0.1
+    ignore_auto_dns: yes
+
+- name: Restart Network Manager
+  systemd:
+    name: NetworkManager
+    state: restarted
+
+- name: Confirm dig sees the correct DNS results by using the DNS Server running locally
+  command:
+    cmd: "{{ item }}"
+  register: dig_output
+  loop:
+    - dig ocp.lan
+    - dig -x 192.168.2.3
+
+- name: Print dig output
+  debug:
+    msg: "{{ item.stdout }}"
+  loop: "{{ dig_output.results }}"
