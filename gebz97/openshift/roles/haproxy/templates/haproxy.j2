@@ -1,7 +1,7 @@
 # Global settings
 #---------------------------------------------------------------------
 global
-    maxconn     {{ max_conn }}
+    maxconn     {{ haproxy_max_conn }}
     log         /dev/log local0 info
     chroot      /var/lib/haproxy
     pidfile     /var/run/haproxy.pid
@@ -40,41 +40,34 @@ listen stats
     stats uri /stats
     stats refresh 10000ms
 
-# Kube API Server
-frontend k8s_api_frontend
-    bind :6443
-    default_backend k8s_api_backend
-    mode tcp
-
-backend k8s_api_backend
-    mode tcp
-    balance source
-
-{% for node in control_plane_nodes %}
-{% set node_name = 'ocp-cp-' ~ loop.index %}
-{% set node_ip = node.ip %}
-{% set node_port = node.port | default(6443) %}
-{% set node_check = node.check | default('check') %}
-{% set node_options = node.options | default('') %}
+{% for service in services %}
+# {{ service.name }}
+frontend {{ service.name }}_frontend
+{% for port in service.frontend_ports %}
+{% set port_name = port.name | default(port.number) %}
+{% set port_mode = port.mode | default('tcp') %}
+{% set port_options = port.options | default('') %}
     
-{{- 'server' | indent(4) }} {{ node_name }} {{ node_ip }}:{{ node_port }} {{ node_check }} {{ node_options }}
+{{- 'bind' | indent(4) }} {{ port_name }} {{ port_options }} mode {{ port_mode }}
 
 {% endfor %}
+{{- 'default_backend' | indent(4) }} {{ service.name }}_backend
 
-# OCP Machine Config Server
-frontend ocp_machine_config_server_frontend
-    mode tcp
-    bind :22623
-    default_backend ocp_machine_config_server_backend
+backend {{ service.name }}_backend
+{% for port in service.backend_ports %}
+{% set port_name = port.name | default(port.number) %}
+{% set port_mode = port.mode | default('tcp') %}
+{% set port_options = port.options | default('') %}
 
-backend ocp_machine_config_server_backend
-    mode tcp
-    balance source
+{{- 'mode' | indent(4) }} {{ port_mode }}
 
-{% for node in control_plane_nodes %}
-{% set node_name = 'ocp-cp-' ~ loop.index %}
+{% endfor %}
+{{- 'balance' | indent(4) }} {{ service.balance | default('source') }}
+
+{% for node in service.nodes %}
+{% set node_name = node.name %}
 {% set node_ip = node.ip %}
-{% set node_port = node.port | default(22623) %}
+{% set node_port = node.port | default(service.backend_ports[0].number) %}
 {% set node_check = node.check | default('check') %}
 {% set node_options = node.options | default('') %}
 
@@ -82,43 +75,5 @@ backend ocp_machine_config_server_backend
 
 {% endfor %}
 
-# OCP Ingress - layer 4 tcp mode for each. Ingress Controller will handle layer 7.
-frontend ocp_http_ingress_frontend
-    bind :80
-    default_backend ocp_http_ingress_backend
-    mode tcp
-
-backend ocp_http_ingress_backend
-    balance source
-    mode tcp
-
-{% for node in worker_nodes %}
-{% set node_name = 'ocp-w-' ~ loop.index %}
-{% set node_ip = node.ip %}
-{% set node_port = node.port | default(80) %}
-{% set node_check = node.check | default('check') %}
-{% set node_options = node.options | default('') %}
-
-{{- 'server' | indent(4) }} {{ node_name }} {{node_ip}}:{{node_port}} {{node_check}} {{node_options}}
-
 {% endfor %}
 
-frontend ocp_https_ingress_frontend
-    bind *:443
-    default_backend ocp_https_ingress_backend
-    mode tcp
-
-backend ocp_https_ingress_backend
-    mode tcp
-    balance source
-
-{% for node in worker_nodes %}
-{% set node_name = 'ocp-w-' ~ loop.index %}
-{% set node_ip = node.ip %}
-{% set node_port = node.port | default(443) %}
-{% set node_check = node.check | default('check') %}
-{% set node_options = node.options | default('') %}
-
-{{- 'server' | indent(4) }} {{node_name}} {{node_ip}}:{{node_port}} {{node_check}} {{node_options}}
-
-{% endfor %}

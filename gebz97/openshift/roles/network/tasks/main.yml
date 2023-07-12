@@ -2,38 +2,38 @@
 # tasks file for network
 - name: Set a Static IP for OCP network interface
   ansible.posix.nmcli:
-    conn_name: "{{ static_ip_interface }}"
-    ifname: "{{ static_ip_interface }}"
+    conn_name: "{{ service_node_internal_interface }}"
+    ifname: "{{ service_node_internal_interface }}"
     type: ethernet
-    ip4: "{{ static_ip_address }}"
-    dns4: "{{ static_ip_dns_server }}"
+    ip4: "{{ service_node_internal_ip }}"
+    dns4: "{{ service_node_internal_dns_server }}"
     gw4: ""
     state: present
 
 - name: Set search domain for OCP network interface
   ansible.builtin.lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ static_ip_interface }}
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ service_node_internal_interface }}
     regexp: '^DOMAIN='
-    line: 'DOMAIN="{{ static_ip_search_domain }}"'
+    line: 'DOMAIN="{{ service_node_internal_search_domain }}"'
     state: present
 
 - name: Set never use this network for default route for OCP network interface
   ansible.builtin.lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ static_ip_interface }}
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ service_node_internal_interface }}
     regexp: '^DEFROUTE='
-    line: "DEFROUTE=\"{{ static_ip_default_route | ternary('yes', 'no') }}\""
+    line: "DEFROUTE=\"{{ service_node_internal_default_route | ternary('yes', 'no') }}\""
     state: present
 
 - name: Set automatically connect for OCP network interface
   ansible.builtin.lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ static_ip_interface }}
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ service_node_internal_interface }}
     regexp: '^ONBOOT='
-    line: "ONBOOT=\"{{ static_ip_auto_connect | ternary('yes', 'no') }}\""
+    line: "ONBOOT=\"{{ service_node_internal_auto_connect | ternary('yes', 'no') }}\""
     state: present
 
 - name: Restart OCP network interface
   ansible.posix.nmcli:
-    conn_name: "{{ static_ip_interface }}"
+    conn_name: "{{ service_node_internal_interface }}"
     state: restarted
 
 #this is a test

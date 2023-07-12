@@ -1,0 +1,4 @@
+./ocp_inv/
+./group_vars/*
+./host_vars/*
+./secrets/*

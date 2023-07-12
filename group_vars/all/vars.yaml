@@ -1,5 +1,6 @@
 ---
 # defaults file for haproxy
+
 haproxy_max_conn: 20000
 
 services:
@@ -67,3 +68,18 @@ services:
       - name: ocp-w-2 # worker node 2 
         ip: 192.168.22.212 # ip address 
 
+# Defaults for NAT
+
+firewalld_internal_interface: ens224
+firewalld_external_interface: ens192
+
+# Network Vars
+service_node_internal_interface: ens224
+service_node_internal_ip: 192.168.22.1
+service_node_internal_dns_server: 127.0.0.1
+service_node_internal_search_domain: ocp.lan
+service_node_internal_default_route: no
+service_node_internal_auto_connect: yes
+
+# defaults file for nfs
+nfs_registry_export_network: 192.168.2.0/24
