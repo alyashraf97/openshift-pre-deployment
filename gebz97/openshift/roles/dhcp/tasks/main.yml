@@ -1,2 +1,37 @@
 ---
 # tasks file for dhcp
+- name: Install DHCP Server
+  ansible.builtin.dnf:
+    name: dhcp-server
+    state: present
+
+- name: Apply DHCP configuration
+  ansible.builtin.template:
+    src: templates/dhcpd.conf.j2
+    dest: /etc/dhcp/dhcpd.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+
+- name: Configure the firewall for DHCP
+  ansible.posix.firewalld:
+    service: dhcp
+    zone: internal
+    permanent: yes
+    state: enabled
+
+- name: Reload the firewall
+  ansible.posix.firewalld:
+    state: reloaded
+
+- name: Enable and start the DHCPD service
+  ansible.builtin.service:
+    name: dhcpd
+    enabled: yes
+    state: reloaded
+
+- name: Check the service status
+  ansible.builtin.service:
+    name: dhcpd
+    state: started

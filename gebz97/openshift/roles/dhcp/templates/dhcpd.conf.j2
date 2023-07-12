@@ -1,0 +1,35 @@
+authoritative;
+ddns-update-style interim;
+allow booting;
+allow bootp;
+allow unknown-clients;
+ignore client-updates;
+default-lease-time 14400;
+max-lease-time 14400;
+
+subnet {{ dns_host_internal_network }} netmask {{ dns_host_internal_network | ipaddr('netmask') }} {
+ option routers                  {{ dns_server_bind_listen_ip }}; # lan
+ option subnet-mask              {{ dns_host_internal_network | ipaddr('netmask') }};
+ option domain-name              "{{ base_domain }}";
+ option domain-name-servers       {{ dns_server_bind_listen_ip }};
+ range {{ dns_host_internal_network | ipaddr('192.168.22.80/28') }} {{ dns_host_internal_network | ipaddr('192.168.22.95/28') }};
+}
+
+host {{ bootstrap_node.name }} {
+ hardware ethernet {{ bootstrap_node.mac }};
+ fixed-address {{ bootstrap_node.ip }};
+}
+
+{% for node in control_plane_nodes %}
+host {{ node.name }} {
+ hardware ethernet {{ node.mac }};
+ fixed-address {{ node.ip }};
+}
+{% endfor %}
+
+{% for node in worker_nodes %}
+host {{ node.name }} {
+ hardware ethernet {{ node.mac }};
+ fixed-address {{ node.ip }};
+}
+{% endfor %}

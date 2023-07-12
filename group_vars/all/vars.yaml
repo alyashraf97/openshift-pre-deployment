@@ -75,7 +75,7 @@ firewalld_external_interface: ens192
 
 # Network Vars
 service_node_internal_interface: ens224
-service_node_internal_ip: 192.168.22.1
+service_node_internal_ip: 192.168.2.1
 service_node_internal_dns_server: 127.0.0.1
 service_node_internal_search_domain: ocp.lan
 service_node_internal_default_route: no
@@ -98,28 +98,36 @@ dns_server: ocp-svc # DNS server name
 # Define OpenShift parameters
 cluster_name: lab # OpenShift cluster name 
 cluster_domain: lab.ocp.lan # OpenShift cluster domain name 
-load_balancer_ip: 192.168.2.1 # OpenShift load balancer IP address 
+load_balancer_ip: 192.168.2.1 # OpenShift load balancer IP address
+cluster_subnet_mask: 255.255.255.0 
 
+# Define Bootstrap Node
 # Define Bootstrap Node
 bootstrap_node:
   name: ocp-bootstrap # Bootstrap node name 
   ip: 192.168.2.3 # Bootstrap node IP address 
+  mac: 00:0c:29:83:df:be # Bootstrap node MAC address 
 
 # Define Control Plane Nodes as a list of dictionaries 
 control_plane_nodes:
   - name: ocp-cp-1 # Control plane node name 
     ip: 192.168.2.11 # Control plane node IP address 
+    mac: 00:0c:29:65:d5:0f # Control plane node MAC address 
   - name: ocp-cp-2 # Control plane node name 
     ip: 192.168.2.12 # Control plane node IP address 
+    mac: 00:0c:29:8e:91:c2 # Control plane node MAC address 
   - name: ocp-cp-3 # Control plane node name 
     ip: 192.168.2.13 # Control plane node IP address 
+    mac: 00:0c:29:4e:e6:77 # Control plane node MAC address 
 
 # Define Worker Nodes as a list of dictionaries 
 worker_nodes:
   - name: ocp-w-1 # Worker node name 
     ip: 192.168.2.21 # Worker node IP address 
+    mac: 00:0c:29:da:35:11 # Worker node MAC address 
   - name: ocp-w-2 # Worker node name 
     ip: 192.168.2.22 # Worker node IP address 
+    mac: 00:0c:29:3d:ea:c4 # Worker node MAC address
 
 # Define ETCD Nodes as a list of dictionaries 
 etcd_nodes:
@@ -129,3 +137,5 @@ etcd_nodes:
     ip: 192.168.2.12 # ETCD node IP address 
   - name: etcd-2 # ETCD node name 
     ip: 192.168.2.13 # ETCD node IP address
+
+

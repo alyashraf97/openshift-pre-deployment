@@ -1,5 +1,4 @@
 ./ocp_inv/hosts
-
 ./group_vars/*
 ./host_vars/*
 ./secrets/*

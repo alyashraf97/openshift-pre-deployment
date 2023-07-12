@@ -1,2 +1,32 @@
 ---
 # defaults file for dhcp
+base_domain: ocp.lan # DNS domain name 
+dns_host_internal_network: 192.168.22.0/24 # DNS host internal network 
+dns_server_bind_listen_ip: 192.168.22.1 # DNS server IP address 
+
+# Define Bootstrap Node
+bootstrap_node:
+  name: ocp-bootstrap # Bootstrap node name 
+  ip: 192.168.2.3 # Bootstrap node IP address 
+  mac: 00:0c:29:83:df:be # Bootstrap node MAC address 
+
+# Define Control Plane Nodes as a list of dictionaries 
+control_plane_nodes:
+  - name: ocp-cp-1 # Control plane node name 
+    ip: 192.168.2.11 # Control plane node IP address 
+    mac: 00:0c:29:65:d5:0f # Control plane node MAC address 
+  - name: ocp-cp-2 # Control plane node name 
+    ip: 192.168.2.12 # Control plane node IP address 
+    mac: 00:0c:29:8e:91:c2 # Control plane node MAC address 
+  - name: ocp-cp-3 # Control plane node name 
+    ip: 192.168.2.13 # Control plane node IP address 
+    mac: 00:0c:29:4e:e6:77 # Control plane node MAC address 
+
+# Define Worker Nodes as a list of dictionaries 
+worker_nodes:
+  - name: ocp-w-1 # Worker node name 
+    ip: 192.168.2.21 # Worker node IP address 
+    mac: 00:0c:29:da:35:11 # Worker node MAC address 
+  - name: ocp-w-2 # Worker node name 
+    ip: 192.168.2.22 # Worker node IP address 
+    mac: 00:0c:29:3d:ea:c4 # Worker node MAC address

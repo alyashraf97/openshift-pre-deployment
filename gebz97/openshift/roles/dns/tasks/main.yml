@@ -1,31 +1,33 @@
 ---
 # tasks file for dns
----
-# tasks file for dns
 - name: Install BIND DNS
-  dnf:
+  ansible.builtin.dnf:
     name:
       - bind
       - bind-utils
-    state: present
+    state: latest
 
 - name: Apply configuration
-  copy:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: root
     group: root
     mode: "{{ item.mode }}"
+    backup: true
   loop:
-    - src: named.conf.j2
+    - src: named.j2
       dest: /etc/named.conf
       mode: '0644'
-    - src: zones/
-      dest: /etc/named/
-      mode: '0755'
+    - src: dns_zone_file.j2
+      dest: /etc/named/zones/db.ocp.lan
+      mode: '0644'
+    - src: zones/dns_reverse.j2
+      dest: /etc/named/zones/db.reverse
+      mode: '0644'
 
 - name: Configure the firewall for DNS
-  firewalld:
+  ansible.posix.firewalld:
     port: "{{ item }}"
     zone: internal
     permanent: yes
@@ -35,29 +37,33 @@
     - 53/tcp
 
 - name: Reload the firewall
-  firewalld:
+  ansible.posix.firewalld:
     state: reloaded
 
 - name: Enable and start the service
-  systemd:
+  ansible.builtin.service:
     name: named
     enabled: yes
-    state: started
+    state: reloaded
 
 - name: Change the LAN nic to use 127.0.0.1 for DNS and ignore automatically obtained DNS parameters
-  nmcli:
-    conn_name: ens192
+  community.general.nmcli:
+    conn_name: "{{ dns_external_connection_profile }}"
     dns4:
       - 127.0.0.1
     ignore_auto_dns: yes
 
 - name: Restart Network Manager
-  systemd:
+  ansible.builtin.service:
     name: NetworkManager
     state: restarted
 
+- name: Wait for network service to be available
+  ansible.builtin.wait_for:
+    port: 22
+
 - name: Confirm dig sees the correct DNS results by using the DNS Server running locally
-  command:
+  ansible.builtin.command:
     cmd: "{{ item }}"
   register: dig_output
   loop:
@@ -65,6 +71,6 @@
     - dig -x 192.168.2.3
 
 - name: Print dig output
-  debug:
+  ansible.builtin.debug:
     msg: "{{ item.stdout }}"
   loop: "{{ dig_output.results }}"
