@@ -1,35 +1,70 @@
-authoritative;
-ddns-update-style interim;
-allow booting;
-allow bootp;
-allow unknown-clients;
-ignore client-updates;
-default-lease-time 14400;
-max-lease-time 14400;
+# Global settings
+#---------------------------------------------------------------------
+global
+    maxconn     {{ haproxy_max_conn }}
+    log         /dev/log local0 info
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    user        haproxy
+    group       haproxy
+    daemon
 
-subnet {{ dns_host_internal_network | ipaddr('network')}} netmask {{ dns_host_internal_network | ipaddr('netmask') }} {
- option routers                  {{ dns_server_bind_listen_ip }}; # lan
- option subnet-mask              {{ dns_host_internal_network | ipaddr('netmask') }};
- option domain-name              "{{ base_domain }}";
- option domain-name-servers       {{ dns_server_bind_listen_ip }};
- range {{ dhcp_start }} {{ dhcp_end }};
-}
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
 
-host {{ bootstrap_node.name }} {
- hardware ethernet {{ bootstrap_node.mac }};
- fixed-address {{ bootstrap_node.ip }};
-}
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    log                     global
+    mode                    http
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option redispatch
+    option forwardfor       except 127.0.0.0/8
+    retries                 3
+    maxconn                 {{ haproxy_max_conn }}
+    timeout http-request    10000ms
+    timeout http-keep-alive 10000ms
+    timeout check           10000ms
+    timeout connect         40000ms
+    timeout client          300000ms
+    timeout server          300000ms
+    timeout queue           50000ms
 
-{% for node in control_plane_nodes %}
-host {{ node.name }} {
- hardware ethernet {{ node.mac }};
- fixed-address {{ node.ip }};
-}
+# Enable HAProxy stats
+listen stats
+    bind :9000
+    stats uri /stats
+    stats refresh 10000ms
+
+{% for service in services %}
+# {{ service.name }}
+{% for frontend_port in service.frontend_ports %}
+frontend {{ service.name }}_frontend_{{ frontend_port.number }}
+{% if frontend_port.mode is defined %}
+    mode {{ frontend_port.mode }}
+{% endif %}
+
+{% if frontend_port.number == 443 %}
+    bind *:{{ frontend_port.number }}
+{% else %}
+    bind :{{ frontend_port.number }}
+{% endif %}
+    default_backend {{ service.name }}_backend
 {% endfor %}
 
-{% for node in worker_nodes %}
-host {{ node.name }} {
- hardware ethernet {{ node.mac }};
- fixed-address {{ node.ip }};
-}
+backend {{ service.name }}_backend
+{% for backend_port in service.backend_ports %}
+{% if backend_port.mode is defined %}
+    mode {{ backend_port.mode }}
+{% endif %}
+    balance source
+{% for node in service.nodes %}
+    server      {{ node.name }} {{ node.ip }}:{{ backend_port.number }} check
+{% endfor %}
+{% endfor %}
+
 {% endfor %}

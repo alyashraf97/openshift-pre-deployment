@@ -25,7 +25,7 @@ defaults
     option redispatch
     option forwardfor       except 127.0.0.0/8
     retries                 3
-    maxconn                 20000
+    maxconn                 {{ haproxy_max_conn }}
     timeout http-request    10000ms
     timeout http-keep-alive 10000ms
     timeout check           10000ms
@@ -42,38 +42,34 @@ listen stats
 
 {% for service in services %}
 # {{ service.name }}
-frontend {{ service.name }}_frontend
-{% for port in service.frontend_ports %}
-{% set port_name = port.name | default(port.number) %}
-{% set port_mode = port.mode | default('tcp') %}
-{% set port_options = port.options | default('') %}
-    
-{{- 'bind' | indent(4) }} {{ port_name }} {{ port_options }} mode {{ port_mode }}
-
+{% for frontend_port in service.frontend_ports %}
+frontend {{ service.name }}_frontend_{{ frontend_port.number }}
+{% if frontend_port.mode is defined %}
+    mode {{ frontend_port.mode }}
+{% endif %}
+{% if frontend_port.options is defined %}
+{{ frontend_port.options | indent(4) }}
+{% endif %}
+{% if frontend_port.number == 443 %}
+    bind *:{{ frontend_port.number }}
+{% else %}
+    bind :{{ frontend_port.number }}
+{% endif %}
+    default_backend {{ service.name }}_backend
 {% endfor %}
-{{- 'default_backend' | indent(4) }} {{ service.name }}_backend
 
 backend {{ service.name }}_backend
-{% for port in service.backend_ports %}
-{% set port_name = port.name | default(port.number) %}
-{% set port_mode = port.mode | default('tcp') %}
-{% set port_options = port.options | default('') %}
-
-{{- 'mode' | indent(4) }} {{ port_mode }}
-
-{% endfor %}
-{{- 'balance' | indent(4) }} {{ service.balance | default('source') }}
-
+{% for backend_port in service.backend_ports %}
+{% if backend_port.mode is defined %}
+    mode {{ backend_port.mode }}
+{% endif %}
+{% if backend_port.options is defined %}
+{{ backend_port.options | indent(4) }}
+{% endif %}
+    balance source
 {% for node in service.nodes %}
-{% set node_name = node.name %}
-{% set node_ip = node.ip %}
-{% set node_port = node.port | default(service.backend_ports[0].number) %}
-{% set node_check = node.check | default('check') %}
-{% set node_options = node.options | default('') %}
-
-{{- 'server' | indent(4) }} {{ node_name }} {{ node_ip }}:{{ node_port }} {{ node_check }} {{ node_options }}
-
+    server      {{ node.name }} {{ node.ip }}:{{ backend_port.number }} check
+{% endfor %}
 {% endfor %}
 
 {% endfor %}
-

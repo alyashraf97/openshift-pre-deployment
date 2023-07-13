@@ -12,7 +12,7 @@
     backup: true
 
 - name: Set correct firewall rules for ports internally
-  loop: "{{ internal_haproxy_ports }}"
+  loop: "{{ services | map(attribute='frontend_ports') | flatten(levels=1) | map(attribute='number') | zip(services | map(attribute='frontend_ports') | flatten(levels=1) | map(attribute='mode')) | map('join', '/') | list }}"
   ansible.posix.firewalld:
     port: "{{ item }}" 
     zone: internal
@@ -20,7 +20,7 @@
     permanent: true
 
 - name: Set correct firewall rules for ports externally
-  loop: "{{ external_haproxy_ports }}"
+  loop: "{{ services | map(attribute='frontend_ports') | flatten(levels=1) | map(attribute='number') | zip(services | map(attribute='frontend_ports') | flatten(levels=1) | map(attribute='mode')) | map('join', '/') | list }}"
   ansible.posix.firewalld:
     port: "{{ item }}" 
     zone: external
@@ -28,18 +28,22 @@
     permanent: true
 
 - name: Set correct firewall rules for internal services
-  loop: "{{ internal_haproxy_services }}"
+  loop:
+    - http
+    - https
   ansible.posix.firewalld:
     service: "{{ item }}"
     zone: internal
     state: enabled
     permanent: true
 
-- name: Set correct firewall rules for internal services
-  loop: "{{ external_haproxy_services }}"
+- name: Set correct firewall rules for external services
+  loop:
+    - http
+    - https
   ansible.posix.firewalld:
     service: "{{ item }}"
-    zone: internal
+    zone: external
     state: enabled
     permanent: true
 

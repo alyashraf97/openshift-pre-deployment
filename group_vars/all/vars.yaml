@@ -3,70 +3,73 @@
 
 haproxy_max_conn: 20000
 
+dhcp_start: 192.168.2.3
+dhcp_end: 192.168.2.254
+
 services:
   - name: k8s_api # Kube API Server 
     frontend_ports:
-      - number: :6443 # external port 
+      - number: 6443 # external port 
         options: ssl verify none # optional settings 
         mode: tcp # optional mode 
     backend_ports:
-      - number: :6443 # internal port 
+      - number: 6443 # internal port 
         options: ssl verify none # optional settings 
         mode: tcp # optional mode 
     nodes:
       - name: ocp-bootstrap # bootstrap node 
-        ip: 192.168.22.200 # ip address 
+        ip: 192.168.2.3 # ip address 
       - name: ocp-cp-1 # control plane node 1 
-        ip: 192.168.22.201 # ip address 
+        ip: 192.168.2.11 # ip address 
       - name: ocp-cp-2 # control plane node 2 
-        ip: 192.168.22.202 # ip address 
+        ip: 192.168.2.12 # ip address 
       - name: ocp-cp-3 # control plane node 3 
-        ip: 192.168.22.203 # ip address 
+        ip: 192.168.2.13 # ip address 
 
   - name: ocp_machine_config_server # OCP Machine Config Server 
     frontend_ports:
-      - number: :22623 # external port 
+      - number: 22623 # external port 
         options: ssl verify none # optional settings 
         mode: tcp # optional mode 
     backend_ports:
-      - number: :22623 # internal port 
+      - number: 22623 # internal port 
         options: ssl verify none # optional settings 
         mode: tcp # optional mode 
     nodes:
       - name: ocp-bootstrap # bootstrap node 
-        ip: 192.168.22.200 # ip address 
+        ip: 192.168.2.3 # ip address 
       - name: ocp-cp-1 # control plane node 1 
-        ip: 192.168.22.201 # ip address 
+        ip: 192.168.2.11 # ip address 
       - name: ocp-cp-2 # control plane node 2 
-        ip: 192.168.22.202 # ip address 
+        ip: 192.168.2.12 # ip address 
       - name: ocp-cp-3 # control plane node 3 
-        ip: 192.168.22.203 # ip address 
+        ip: 192.168.2.13 # ip address 
 
   - name: ocp_http_ingress # OCP Ingress - layer 4 tcp mode for each. Ingress Controller will handle layer 7.
     frontend_ports:
-      - number: :80 # external port 
+      - number: 80 # external port 
         mode: tcp # optional mode 
     backend_ports:
-      - number: :80 # internal port 
+      - number: 80 # internal port 
         mode: tcp # optional mode 
     nodes:
       - name: ocp-w-1 # worker node 1 
-        ip: 192.168.22.211 # ip address 
+        ip: 192.168.2.21 # ip address 
       - name: ocp-w-2 # worker node 2 
-        ip: 192.168.22.212 # ip address 
+        ip: 192.168.2.22 # ip address 
 
   - name: ocp_https_ingress # OCP Ingress - layer 4 tcp mode for each. Ingress Controller will handle layer 7.
     frontend_ports:
-      - number: *:443 # external port 
+      - number: 443 # external port 
         mode: tcp # optional mode 
     backend_ports:
-      - number: :443 # internal port 
+      - number: 443 # internal port 
         mode: tcp # optional mode 
     nodes:
       - name: ocp-w-1 # worker node 1 
-        ip: 192.168.22.211 # ip address 
+        ip: 192.168.2.21 # ip address 
       - name: ocp-w-2 # worker node 2 
-        ip: 192.168.22.212 # ip address 
+        ip: 192.168.2.22 # ip address 
 
 # Defaults for NAT
 

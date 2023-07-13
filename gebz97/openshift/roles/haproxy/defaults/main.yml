@@ -5,11 +5,11 @@ haproxy_max_conn: 20000
 services:
   - name: k8s_api # Kube API Server 
     frontend_ports:
-      - number: :6443 # external port 
+      - number: 6443 # external port 
         options: ssl verify none # optional settings 
         mode: tcp # optional mode 
     backend_ports:
-      - number: :6443 # internal port 
+      - number: 6443 # internal port 
         options: ssl verify none # optional settings 
         mode: tcp # optional mode 
     nodes:
@@ -24,11 +24,11 @@ services:
 
   - name: ocp_machine_config_server # OCP Machine Config Server 
     frontend_ports:
-      - number: :22623 # external port 
+      - number: 22623 # external port 
         options: ssl verify none # optional settings 
         mode: tcp # optional mode 
     backend_ports:
-      - number: :22623 # internal port 
+      - number: 22623 # internal port 
         options: ssl verify none # optional settings 
         mode: tcp # optional mode 
     nodes:
@@ -43,10 +43,10 @@ services:
 
   - name: ocp_http_ingress # OCP Ingress - layer 4 tcp mode for each. Ingress Controller will handle layer 7.
     frontend_ports:
-      - number: :80 # external port 
+      - number: 80 # external port 
         mode: tcp # optional mode 
     backend_ports:
-      - number: :80 # internal port 
+      - number: 80 # internal port 
         mode: tcp # optional mode 
     nodes:
       - name: ocp-w-1 # worker node 1 
@@ -56,10 +56,10 @@ services:
 
   - name: ocp_https_ingress # OCP Ingress - layer 4 tcp mode for each. Ingress Controller will handle layer 7.
     frontend_ports:
-      - number: *:443 # external port 
+      - number: 443 # external port 
         mode: tcp # optional mode 
     backend_ports:
-      - number: :443 # internal port 
+      - number: 443 # internal port 
         mode: tcp # optional mode 
     nodes:
       - name: ocp-w-1 # worker node 1 
