@@ -22,14 +22,15 @@
     state: enabled
 
 - name: Reload the firewall
-  ansible.posix.firewalld:
+  ansible.builtin.service:
+    name: firewalld
     state: reloaded
 
 - name: Enable and start the DHCPD service
   ansible.builtin.service:
     name: dhcpd
     enabled: yes
-    state: reloaded
+    state: restarted
 
 - name: Check the service status
   ansible.builtin.service:

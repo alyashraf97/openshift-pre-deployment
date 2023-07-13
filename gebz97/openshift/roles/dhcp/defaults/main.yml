@@ -1,8 +1,10 @@
 ---
 # defaults file for dhcp
 base_domain: ocp.lan # DNS domain name 
-dns_host_internal_network: 192.168.22.0/24 # DNS host internal network 
-dns_server_bind_listen_ip: 192.168.22.1 # DNS server IP address 
+dns_host_internal_network: 192.168.2.0/24 # DNS host internal network 
+dns_server_bind_listen_ip: 192.168.2.1 # DNS server IP address 
+dhcp_start: 192.168.2.100/24
+dhcp_end: 192.168.2.240/24
 
 # Define Bootstrap Node
 bootstrap_node:

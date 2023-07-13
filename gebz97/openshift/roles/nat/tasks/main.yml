@@ -23,5 +23,6 @@
     - external
 
 - name: Reload firewalld config
-  ansible.posix.firewalld:
+  ansible.builtin.service:
+    name: firewalld
     state: reloaded

@@ -7,12 +7,12 @@ ignore client-updates;
 default-lease-time 14400;
 max-lease-time 14400;
 
-subnet {{ dns_host_internal_network }} netmask {{ dns_host_internal_network | ipaddr('netmask') }} {
+subnet {{ dns_host_internal_network | ipaddr('network')}} netmask {{ dns_host_internal_network | ipaddr('netmask') }} {
  option routers                  {{ dns_server_bind_listen_ip }}; # lan
  option subnet-mask              {{ dns_host_internal_network | ipaddr('netmask') }};
  option domain-name              "{{ base_domain }}";
  option domain-name-servers       {{ dns_server_bind_listen_ip }};
- range {{ dns_host_internal_network | ipaddr('192.168.22.80/28') }} {{ dns_host_internal_network | ipaddr('192.168.22.95/28') }};
+ range {{ dhcp_start }} {{ dhcp_end }};
 }
 
 host {{ bootstrap_node.name }} {

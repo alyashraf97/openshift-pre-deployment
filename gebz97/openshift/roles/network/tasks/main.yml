@@ -11,29 +11,27 @@
     state: present
 
 - name: Set search domain for OCP network interface
-  ansible.builtin.lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ service_node_internal_interface }}
-    regexp: '^DOMAIN='
-    line: 'DOMAIN="{{ service_node_internal_search_domain }}"'
+  community.general.nmcli:
+    conn_name: "{{ service_node_internal_interface }}"
+    type: ethernet
+    dns4_search: "{{ service_node_internal_search_domain }}"
     state: present
 
 - name: Set never use this network for default route for OCP network interface
-  ansible.builtin.lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ service_node_internal_interface }}
-    regexp: '^DEFROUTE='
-    line: "DEFROUTE=\"{{ service_node_internal_default_route | ternary('yes', 'no') }}\""
+  community.general.nmcli:
+    conn_name: "{{ service_node_internal_interface }}"
+    type: ethernet
+    never_default4: "{{ not service_node_internal_default_route | bool }}"
     state: present
 
 - name: Set automatically connect for OCP network interface
-  ansible.builtin.lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ service_node_internal_interface }}
-    regexp: '^ONBOOT='
-    line: "ONBOOT=\"{{ service_node_internal_auto_connect | ternary('yes', 'no') }}\""
+  community.general.nmcli:
+    conn_name: "{{ service_node_internal_interface }}"
+    type: ethernet
+    autoconnect: "{{ service_node_internal_auto_connect | bool }}"
     state: present
 
 - name: Restart OCP network interface
   community.general.nmcli:
     conn_name: "{{ service_node_internal_interface }}"
-    state: restarted
-
-#this is a test
+    state: present

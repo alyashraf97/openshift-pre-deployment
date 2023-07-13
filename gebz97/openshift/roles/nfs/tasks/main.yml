@@ -1,4 +1,3 @@
----
 # tasks file for nfs
 - name: Install NFS Server
   ansible.builtin.dnf:
@@ -13,11 +12,14 @@
     group: "{{ nfs_registry_share_group }}"
     mode: "{{ nfs_registry_share_mode }}"
 
+- name: Add the Share to /etc/exports
+  ansible.builtin.lineinfile:
+    path: /etc/exports
+    line: "{{ nfs_registry_share_dir }} {{ nfs_registry_export_network }}({{ nfs_registry_export_options }})"
+    state: present
+
 - name: Export the Share
-  ansible.posix.nfs_export:
-    path: "{{ nfs_registry_share_dir }}"
-    options: "{{ nfs_registry_export_options }}"
-    clients: "{{ nfs_registry_export_network }}"
+  ansible.builtin.shell: exportfs -ra
 
 - name: Set Firewall rules
   ansible.posix.firewalld:
@@ -39,3 +41,11 @@
     - nfs-server
     - rpcbind
     - nfs-mountd
+
+- name: Mount the NFS export on a remote host
+  ansible.posix.mount:
+    path: /mnt # The mount point on the remote host
+    src: "{{ service_node_internal_ip }}:/var/nfs/registry" # The NFS export source
+    fstype: nfs # The file system type
+    state: mounted # The desired state of the mount point
+
