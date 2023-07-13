@@ -7,7 +7,7 @@
     type: ethernet
     ip4: "{{ service_node_internal_ip }}"
     dns4: "{{ service_node_internal_dns_server }}"
-    gw4: ""
+    gw4: "{{ service_node_external_ip }}"
     state: present
 
 - name: Set search domain for OCP network interface

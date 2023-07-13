@@ -42,10 +42,29 @@
     - rpcbind
     - nfs-mountd
 
-- name: Mount the NFS export on a remote host
+- name: Mount the NFS share on the temporary mount point
   ansible.posix.mount:
-    path: /mnt # The mount point on the remote host
-    src: "{{ service_node_internal_ip }}:/var/nfs/registry" # The NFS export source
-    fstype: nfs # The file system type
-    state: mounted # The desired state of the mount point
+    path: /mnt/test
+    src: "{{ nfs_server_ip }}:/shares/registry"
+    fstype: nfs
+    state: mounted
 
+- name: List the files on the NFS share
+  ansible.builtin.shell: ls -la /mnt/test
+  register: ls_output
+
+- name: Print the output of the ls command
+  ansible.builtin.debug:
+    msg: "{{ ls_output.stdout }}"
+
+- name: Unmount the NFS share from the temporary mount point
+  ansible.posix.mount:
+    path: /mnt/test
+    src: "{{ nfs_server_ip }}:/shares/registry"
+    fstype: nfs
+    state: absent
+
+- name: Remove the temporary mount point
+  ansible.builtin.file:
+    path: /mnt/test
+    state: absent

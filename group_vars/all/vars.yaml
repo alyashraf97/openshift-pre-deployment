@@ -83,6 +83,7 @@ service_node_internal_dns_server: 127.0.0.1
 service_node_internal_search_domain: ocp.lan
 service_node_internal_default_route: no
 service_node_internal_auto_connect: yes
+service_node_external_ip: 192.168.1.232
 
 # defaults file for nfs
 nfs_registry_export_network: 192.168.2.0/24
