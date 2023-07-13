@@ -1,7 +1,7 @@
 ---
 # tasks file for network
 - name: Set a Static IP for OCP network interface
-  ansible.posix.nmcli:
+  community.general.nmcli:
     conn_name: "{{ service_node_internal_interface }}"
     ifname: "{{ service_node_internal_interface }}"
     type: ethernet
@@ -32,7 +32,7 @@
     state: present
 
 - name: Restart OCP network interface
-  ansible.posix.nmcli:
+  community.general.nmcli:
     conn_name: "{{ service_node_internal_interface }}"
     state: restarted
 
