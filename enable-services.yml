@@ -1,0 +1,100 @@
+---
+- name: Playbook for enabling services
+  hosts: services
+  become: true
+  become_user: root
+  ask_become_pass: true
+  remote_user: gebz
+  become_method: sudo
+
+  pre_tasks:
+    - name: Ensure host is available
+      register: ping_result
+      ansible.builtin.ping:
+
+    - name: Ping Result
+      ansible.builtin.debug:
+        var: ping_result
+
+  roles:
+    - gebz97/openshift/roles/network
+    - gebz97/openshift/roles/nat
+    - gebz97/openshift/roles/dns
+    - gebz97/openshift/roles/dhcp
+    - gebz97/openshift/roles/haproxy
+    - gebz97/openshift/roles/nfs
+
+- name: Playbook for testing services
+  hosts: services
+  become: true
+  become_user: root
+  ask_become_pass: true
+  remote_user: gebz
+  become_method: sudo
+
+  tasks:
+    - name: Test network connectivity
+      ansible.builtin.shell: ping -c 4 {{ item }}
+      loop:
+        - "{{ service_node_internal_ip }}"
+        - "{{ primary_forward_dns }}"
+        - "{{ secondary_forward_dns }}"
+        - "{{ tertiary_forward_dns }}"
+      register: ping_result
+
+    - name: Display ping result
+      ansible.builtin.debug:
+        var: ping_result
+
+    - name: Test NAT functionality
+      ansible.builtin.shell: curl https://www.google.com
+      register: curl_result
+
+    - name: Display curl result
+      ansible.builtin.debug:
+        var: curl_result
+
+    - name: Test DNS functionality
+      ansible.builtin.shell: dig {{ item }} @{{ dns_server_bind_listen_ip }}
+      loop:
+        - "{{ base_domain }}"
+        - "ocp-bootstrap.{{ base_domain }}"
+        - "ocp-cp-1.{{ base_domain }}"
+        - "ocp-cp-2.{{ base_domain }}"
+        - "ocp-cp-3.{{ base_domain }}"
+        - "ocp-w-1.{{ base_domain }}"
+        - "ocp-w-2.{{ base_domain }}"
+      register: dig_result
+
+    - name: Display dig result
+      ansible.builtin.debug:
+        var: dig_result
+
+    - name: Test DHCP functionality
+      ansible.builtin.shell: dhclient {{ service_node_internal_interface }} && ip a show {{ service_node_internal_interface }}
+      register: dhclient_result
+
+    - name: Display dhclient result
+      ansible.builtin.debug:
+        var: dhclient_result
+
+    - name: Test HAProxy functionality
+      ansible.builtin.shell: curl https://{{ item.name }}.{{ base_domain }} --resolve {{ item.name }}.{{ base_domain }}:443:{{ item.ip }}
+      loop:
+        - "{{ services[0].nodes }}" # k8s_api nodes
+        - "{{ services[1].nodes }}" # ocp_machine_config_server nodes
+        - "{{ services[2].nodes }}" # ocp_http_ingress nodes
+        - "{{ services[3].nodes }}" # ocp_https_ingress nodes
+      register: haproxy_result
+
+    - name: Display haproxy result
+      ansible.builtin.debug:
+        var: haproxy_result
+
+    - name: Test NFS functionality
+      ansible.builtin.shell: mount {{ service_node_internal_ip }}:/var/nfs/registry /mnt && ls /mnt && umount /mnt
+      register: nfs_result
+
+    - name: Display nfs result
+      ansible.builtin.debug:
+        var: nfs_result
